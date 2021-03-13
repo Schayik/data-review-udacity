@@ -3,6 +3,8 @@
 # data files
 data.csv
 emissions.db
+classifier.pkl
+data_filled.db
 
 # Created by https://www.toptal.com/developers/gitignore/api/jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=jupyternotebooks
