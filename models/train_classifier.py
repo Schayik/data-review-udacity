@@ -8,7 +8,7 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
-from .dummy_transformer import DummyTransformer
+from .emissions_transformer import EmissionsTransformer
 
 
 def load_data(database_filepath):
@@ -23,12 +23,35 @@ def load_data(database_filepath):
     return X, y
 
 
+def split_data(df):
+    """
+    INPUT - df - full car emissions df
+
+    OUTPUT
+    X_train, X_test, y_train, y_test - test and train sets
+    X_pop - parameter matrix for given tax band labels
+    X_nan - parameter matrix of missing tax band values which
+        cannot be used for training and testing the model. y_nan would be an empty
+    """
+
+    df_pop = df.dropna(subset=['tax_band'])
+    X = df_pop.drop(columns='tax_band')
+    y = df_pop['tax_band']
+
+    X_train, X_test, y_train, y_test, = train_test_split(X, y)
+
+    df_nan = df[df['tax_band'].isnull()]
+    X_nan = df_nan.drop(columns='tax_band')
+
+    return X_train, X_test, y_train, y_test, df_pop, X_nan
+
+
 def build_model():
     """Describes the model used on the data, consisting of NLP transformers and
     an individual classifier of each category."""
 
     pipeline = Pipeline([
-        ('tfidf', DummyTransformer()),
+        ('tfidf', EmissionsTransformer()),
         ('clf', RandomForestClassifier(n_estimators=10)),
     ])
 
@@ -59,9 +82,12 @@ def save_model(model, model_filepath):
 def main():
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
-        print('Loading data...\n    DATABASE: {}'.format(database_filepath))
-        X, y = load_data(database_filepath)
-        X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+        print('Loading data...')
+        df = load_data(database_filepath)
+
+        print('splitting data...')
+        X_train, X_test, y_train, y_test, df_pop, X_nan = split_data(df)
 
         print('Building model...')
         model = build_model()
