@@ -8,7 +8,7 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
-from .emissions_transformer import EmissionsTransformer
+from emissions_transformer import EmissionsTransformer
 
 
 def load_data(database_filepath):
@@ -17,10 +17,7 @@ def load_data(database_filepath):
     engine = create_engine(f'sqlite:///{database_filepath}')
     df = pd.read_sql_table('emissions', engine)
 
-    X = df.drop(columns='tax_band')
-    y = df['tax_band']
-
-    return X, y
+    return df
 
 
 def split_data(df):
@@ -51,12 +48,12 @@ def build_model():
     an individual classifier of each category."""
 
     pipeline = Pipeline([
-        ('tfidf', EmissionsTransformer()),
-        ('clf', RandomForestClassifier(n_estimators=10)),
+        ('et', EmissionsTransformer()),
+        ('clf', RandomForestClassifier()),
     ])
 
     parameters = {
-        'clf__estimator__criterion': ['gini', 'entropy'],
+        'clf__criterion': ['gini', 'entropy'],
     }
 
     model = GridSearchCV(pipeline, param_grid=parameters)
