@@ -83,7 +83,7 @@ def main():
         print('Loading data...')
         df = load_data(database_filepath)
 
-        print('splitting data...')
+        print('Splitting data...')
         X_train, X_test, y_train, y_test, df_pop, X_nan = split_data(df)
 
         print('Building model...')

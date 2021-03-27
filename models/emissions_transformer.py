@@ -8,19 +8,31 @@ class EmissionsTransformer(BaseEstimator, TransformerMixin):
     """
 
     def drop_columns(self, X):
-        """
-        Dropping model and description as they would create too many dummies.
-        Dropping fuel_cost_6000_miles as it contains only empty values.
-        """
+        """Dropping irrelevant columns from the data set"""
 
-        X = X.drop(['model', 'description', 'fuel_cost_6000_miles'], axis=1)
+        irrelevant_numeric = [
+            'urban_metric', 'extra_urban_metric', 'urban_imperial',
+            'extra_urban_imperial', 'combined_imperial', 'thc_nox_emissions',
+            'fuel_cost_6000_miles', 'standard_12_months', 'standard_6_months',
+            'first_year_12_months', 'first_year_6_months',
+        ]
+        X = X.drop(irrelevant_numeric, axis=1)
+
+        irrelevant_categorical = ['model', 'description']
+        X = X.drop(irrelevant_categorical, axis=1)
+
         return X
 
     def fill_columns(self, X):
         """Filling the numeric columns with the mean of these columns"""
 
-        numeric_columns = X.select_dtypes(exclude=['object']).columns
-        X[numeric_columns] = X[numeric_columns].fillna(X.mean())
+        relevant_numeric = [
+            'year', 'euro_standard', 'noise_level', 'engine_capacity',
+            'combined_metric', 'fuel_cost_12000_miles', 'co2', 'thc_emissions',
+            'co_emissions', 'nox_emissions', 'particulates_emissions',
+        ]
+        X[relevant_numeric] = X[relevant_numeric].fillna(X.mean())
+
         return X
 
     def adjust_categorical(self, X):
