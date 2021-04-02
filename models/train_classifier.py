@@ -20,6 +20,25 @@ def load_data(database_filepath):
     return df
 
 
+def get_categorical_lists(df):
+    """
+    INPUT - df - fuel emissions dataframe
+
+    OUTPUT
+    mf - list of possible manufacturers
+    tmt - list of possible transmission types
+    tm - list of possible transmissions
+    ft - list of possible fuel types
+    """
+
+    mfs = df['manufacturer'].unique()
+    tmts = df['transmission_type'].unique()
+    tms = df['transmission'].unique()
+    fts = df['fuel_type'].unique()
+
+    return mfs, tmts, tms, fts
+
+
 def split_data(df):
     """
     INPUT - df - full car emissions df
@@ -43,12 +62,12 @@ def split_data(df):
     return X_train, X_test, y_train, y_test, df_pop, X_nan
 
 
-def build_model():
+def build_model(mfs, tmts, tms, fts):
     """Describes the model used on the data, consisting of NLP transformers and
     an individual classifier of each category."""
 
     pipeline = Pipeline([
-        ('et', EmissionsTransformer()),
+        ('et', EmissionsTransformer(mfs, tmts, tms, fts)),
         ('clf', RandomForestClassifier()),
     ])
 
@@ -87,7 +106,8 @@ def main():
         X_train, X_test, y_train, y_test, df_pop, X_nan = split_data(df)
 
         print('Building model...')
-        model = build_model()
+        mfs, tmts, tms, fts = get_categorical_lists(df)
+        model = build_model(mfs, tmts, tms, fts)
 
         print('Training model...')
         model.fit(X_train, y_train)
